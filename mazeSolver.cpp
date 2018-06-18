@@ -140,13 +140,11 @@ int bruteForceMazeSolver(int i, int j, bool oneShot, int startX, int startY)
         myMaze.matrix[i][j] = '.';
     }
 
-    cout << endl << endl;
-
-
     // Check if adjacent spot is F
     if(isFinishAdjacent(i,j)){
         myMaze.matrix[i][j] = '.';
 				myMaze.matrix[myMaze.startX][myMaze.startY] = 'S';
+				cout << endl << "Brute Force:" << endl;
 				printArray(myMaze);
         cout << "Brute distance: " << bruteForceCount << endl;
     }
@@ -325,32 +323,26 @@ bool bruteCheckForEmpty(int i, int j){
 }
 
 
-// Runs the same thing as bruteCheckForEmpty, except places '@' and
-// does not run if the finish is adjacent. Without the check, the program
-// defaults to looking for '.' spaces rather than stopping
+// Runs the same thing as bruteCheckForEmpty, except places '@' 
 bool bruteCheckForTraveled(int i, int j){
     //if(!isFinishAdjacent(myMaze,i,j)){
         if(hasBeenChecked(i,j+1)){
             myMaze.matrix[i][j] = '@';
-            cout << "east " << i << "x" << j << endl;
             bruteForceMazeSolver(i, j+1,true, 0, 0);
         }
         else{
             if(hasBeenChecked(i+1,j)){
                 myMaze.matrix[i][j] = '@';
-                cout << "north " << i << "x" << j << endl;
                 bruteForceMazeSolver(i+1, j, true, 0, 0);
             }
             else{
                 if(hasBeenChecked(i-1,j)){
                     myMaze.matrix[i][j] = '@';
-                    cout << "south " << i << "x" << j  << endl;
                     bruteForceMazeSolver(i-1, j, true, 0, 0);
                 }
                 else{
                     if(hasBeenChecked(i,j-1)){
                         myMaze.matrix[i][j] = '@';
-                        cout << "west" << i << "x" << j  << endl;
                         bruteForceMazeSolver(i, j-1, true, 0, 0);
                     }
                     else{
