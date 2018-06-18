@@ -107,29 +107,7 @@ int main()
 		mazeArray[i][j] = myMaze.matrix[i][j];
 	}
 
-
-	// path[0][0] = 'q';
-	// path[0][1] = 'w';
-	// path[1][0] = 'a';
-	// path[1][1] = 'd';
-	//
-	// printArray(path,2,2);
-
-
 	bruteForceMazeSolver(mazeArray, 1, 1, !alwaysTrue, x, y, myMaze);
-
-
-
-	// // false
-	// bool isEmptySpotZeroZero = isEmpty(myMaze,0,0);
-	// // true
-	// bool isEmptySpotOneTen = isEmpty(myMaze,1,10);
-	//
-	// if(isEmptySpotZeroZero) cout << "wrong" << endl;
-	// else cout<< "right" << endl;
-	//
-	// if(!isEmptySpotOneTen) cout << "wrong" << endl;
-	// else cout<< "right" << endl;
 
 	return 0;
 }
