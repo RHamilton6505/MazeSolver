@@ -7,7 +7,8 @@ using namespace std;
 
 
 int backtrackingMazeSolver(int i, int j);
-int greedyMazeSolver(int i, int j);
+int greedyMazeSolver(int i, int j, int endX, int endY);
+std::vector<int> GetClosestNodeToFinish(int i, int j, int endX, int endY);
 int divideAndConquerMazeSolver(int i, int j);
 int dynamicProgrammingMazeSolver(int i, int j);
 int randomizedMazeSolver(int i, int j);
@@ -69,10 +70,18 @@ int main()
 		y=j;
 	}
 
+	//Find Finish coordinates
+	for(int i=0; i<myMaze.rows; i++)
+	for(int j=0; j<myMaze.cols; j++)
+	if( myMaze.matrix[i][j] == 'F' ){
+		endX=j;
+		endY=i;
+	}
+
 	//Call a recursive mazeSolver
 	//FIXME:RH:int bfDistance = bruteForceMazeSolver(x,y);     //brute force? dnc?
 	int btDistance = backtrackingMazeSolver(x,y);     //brute force? dnc?
-	int gDistance = greedyMazeSolver(x,y);
+	int gDistance = greedyMazeSolver(x,y,endX,endY);
 	int dncDistance = divideAndConquerMazeSolver(x,y);
 	int dpDistance = dynamicProgrammingMazeSolver(x,y);
 	int rDistance = randomizedMazeSolver(x,y);
@@ -150,10 +159,43 @@ int backtrackingMazeSolver(int i, int j)
 	//algorithm goes here
 	return -1;
 }
-int greedyMazeSolver(int i, int j)
+int greedyMazeSolver(int i, int j, int endX, int endY)
 {
-	//algorithm goes here
-	return -1;
+	if(myMaze.matrix[i][j] == 'F') return 1;
+
+	std::vector<int> nextNode = GetClosestNodeToFinish(i, j, endX, endY);
+	myMaze.matrix[nextNode[0]][nextNode[1]] = 'X';
+	return greedyMazeSolver(nextNode[0], nextNode[1], endX, endY);
+
+  // return -1;
+}
+
+std::vector<int> GetClosestNodeToFinish(int i, int j, int endX, int endY)
+{
+	std::vector<int> north = {i, j-1};
+	std::vector<int> east = {i+1, j};
+	std::vector<int> south = {i, j+1};
+	std::vector<int> west = {i-1, j};
+
+	std::vector<std::vector<int>> directions;
+	directions.push_back(north);
+	directions.push_back(east);
+	directions.push_back(south);
+	directions.push_back(west);
+
+	std::vector<int> clostestNode = south;
+	for(int i = 0; i < 4; i++)
+	{
+		int nodeDistance = std::abs(clostestNode[0] - endX) + std::abs(clostestNode[1] - endY);
+		if(nodeDistance > (std::abs(directions[i][0] - endX) + std::abs(directions[i][1] - endY)))
+		{
+			if(myMaze.matrix[directions[i][0]][directions[i][1]] != '*')
+			{
+				clostestNode = directions[i];
+			}
+		}
+	}
+	return clostestNode;
 }
 int divideAndConquerMazeSolver(int i, int j)
 {
