@@ -17,6 +17,7 @@ int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, 
 void printArray(char **array, int row, int col);
 bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze);
 bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze);
+bool isFinishAdjacent(char **myMaze, int i, int j);
 
 struct maze
 {
@@ -135,6 +136,7 @@ int main()
 
 int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, int startY, struct maze structMaze)
 {
+	bool isEmptySpace, isTraveledSpace;
 
 	// will not activate unless this is the first iteration
 	// gives starting location
@@ -143,20 +145,20 @@ int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, 
 		j = startY;
 		oneShot = true;
 		myMaze[i][j] = 't';
-		printArray(myMaze, structMaze.rows, structMaze.cols);
 	}
 
 	// cout << endl << endl;
 	// printArray(myMaze, structMaze.rows, structMaze.cols);
 
 	// Check if adjacent spot is F
-	if(myMaze[i][j]=='F'){
+	if(isFinishAdjacent(myMaze,i,j)){
+		myMaze[i][j] = 't';
 		printArray(myMaze, structMaze.rows, structMaze.cols);
 	}
 	else{
-		bool isEmptySpace = bruteCheckForEmpty(myMaze,i,j,structMaze);
-		if(isEmptySpace){
-			bool isTraveledSpace = bruteCheckForTraveled(myMaze,i,j, structMaze);
+		isEmptySpace = bruteCheckForEmpty(myMaze,i,j,structMaze);
+		if(!isEmptySpace){
+			isTraveledSpace = bruteCheckForTraveled(myMaze,i,j, structMaze);
 			if(!isTraveledSpace){
 				cout << "ERROR";
 			}
@@ -242,8 +244,7 @@ bool hasBeenChecked(char **myMaze, int i, int j, int height, int width){
 
 	// check if space
 	if(isValidLocation){
-		if(myMaze[i][j] == ' ')
-		{
+		if(myMaze[i][j] == 't'){
 			isTracked = true;
 		}
 	}
@@ -292,32 +293,52 @@ bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze){
 
 bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze){
 
-	if(hasBeenChecked(myMaze,i,j+1,structMaze.rows,structMaze.cols)){
-		myMaze[i][j] = 'x';
-		bruteForceMazeSolver(myMaze, i, j+1,true, 0, 0, structMaze);
-	}
-	else{
-		if(hasBeenChecked(myMaze,i+1,j,structMaze.rows,structMaze.cols)){
+	if(!isFinishAdjacent(myMaze,i,j)){
+		if(hasBeenChecked(myMaze,i,j+1,structMaze.rows,structMaze.cols)){
 			myMaze[i][j] = 'x';
-			bruteForceMazeSolver(myMaze, i+1, j, true, 0, 0, structMaze);
+			bruteForceMazeSolver(myMaze, i, j+1,true, 0, 0, structMaze);
 		}
 		else{
-			if(hasBeenChecked(myMaze,i-1,j,structMaze.rows,structMaze.cols)){
+			if(hasBeenChecked(myMaze,i+1,j,structMaze.rows,structMaze.cols)){
 				myMaze[i][j] = 'x';
-				bruteForceMazeSolver(myMaze, i-1, j, true, 0, 0, structMaze);
+				bruteForceMazeSolver(myMaze, i+1, j, true, 0, 0, structMaze);
 			}
 			else{
-				if(hasBeenChecked(myMaze,i,j-1,structMaze.rows,structMaze.cols)){
+				if(hasBeenChecked(myMaze,i-1,j,structMaze.rows,structMaze.cols)){
 					myMaze[i][j] = 'x';
-					bruteForceMazeSolver(myMaze, i, j-1, true, 0, 0, structMaze);
+					bruteForceMazeSolver(myMaze, i-1, j, true, 0, 0, structMaze);
 				}
 				else{
-					return false;
+					if(hasBeenChecked(myMaze,i,j-1,structMaze.rows,structMaze.cols)){
+						myMaze[i][j] = 'x';
+						bruteForceMazeSolver(myMaze, i, j-1, true, 0, 0, structMaze);
+					}
+					else{
+						return false;
+					}
 				}
 			}
 		}
 	}
 	return true;
+}
+
+bool isFinishAdjacent(char **myMaze, int i, int j){
+
+	if(myMaze[i+1][j]=='F'){
+		return true;
+	}
+	if(myMaze[i-1][j]=='F'){
+		return true;
+	}
+	if(myMaze[i][j+j]=='F'){
+		return true;
+	}
+	if(myMaze[i][j-j]=='F'){
+		return true;
+	}
+
+	return false;
 }
 
 //recursion!!
