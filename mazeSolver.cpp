@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -62,6 +63,7 @@ int main()
 		cout << endl;
 	}
 	int x=1,y=1;
+	int endX=1,endY=1;
 
 	//Find starting coordinates
 	for(int i=0; i<myMaze.rows; i++)
@@ -82,14 +84,14 @@ int main()
 	//Call a recursive mazeSolver
 	FIXME:RH:int bfDistance = bruteForceMazeSolver(x,y);     //brute force? dnc?
 	int btDistance = backtrackingMazeSolver(x,y);     //brute force? dnc?
-	int gDistance = greedyMazeSolver(x,y,endX,endY);
+	// int gDistance = greedyMazeSolver(x,y,endX,endY);
 	int dncDistance = divideAndConquerMazeSolver(x,y);
 	int dpDistance = dynamicProgrammingMazeSolver(x,y);
 	int rDistance = randomizedMazeSolver(x,y);
 
 	cout << "Brute force distance: " << bfDistance << " units away!" << endl;
 	cout << "Backtracking distance: " << btDistance << " units away!" << endl;
-	cout << "Greedy distance: " << gDistance << " units away!" << endl;
+	// cout << "Greedy distance: " << gDistance << " units away!" << endl;
 	cout << "Divide and conquer distance: " << dncDistance << " units away!" << endl;
 	cout << "Dynamic programming distance: " << dpDistance << " units away!" << endl;
 	cout << "Randomized distance: " << rDistance << " units away!" << endl;
@@ -170,7 +172,7 @@ int greedyMazeSolver(int i, int j, int endX, int endY)
 	myMaze.matrix[nextNode[0]][nextNode[1]] = 'X';
 	return greedyMazeSolver(nextNode[0], nextNode[1], endX, endY);
 
-  // return -1;
+  return -1;
 }
 
 std::vector<int> GetClosestNodeToFinish(int i, int j, int endX, int endY)
