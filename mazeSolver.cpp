@@ -5,16 +5,18 @@
 
 using namespace std;
 
-int bruteForceMazeSolver(struct maze myMaze, int i, int j, char **pathArray, bool oneShot, int start, int end);
+
 int backtrackingMazeSolver(int i, int j);
 int greedyMazeSolver(int i, int j);
 int divideAndConquerMazeSolver(int i, int j);
 int dynamicProgrammingMazeSolver(int i, int j);
 int randomizedMazeSolver(int i, int j);
-bool isEmpty(struct maze myMaze, int i, int j);
-bool hasBeenChecked(struct maze myMaze, int i, int j);
-int bruteForceMazeSolver(struct maze myMaze, int i, int j, char **pathArray, bool oneShot, int start, int end);
-void printArray(char **pathArray, int row, int col);
+bool isEmpty(char **myMaze, int i, int j, int height, int width);
+bool hasBeenChecked(char **myMaze, int i, int j, int height, int width);
+int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, int startY, struct maze structMaze);
+void printArray(char **array, int row, int col);
+bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze);
+bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze);
 
 struct maze
 {
@@ -93,14 +95,15 @@ int main()
 	// Begin Student Written Section
 	// ****************************************
 
-	char **path;
+
+	char **mazeArray;
 	bool alwaysTrue = true;
 
-	path = new char *[myMaze.rows];
+	mazeArray = new char *[myMaze.rows];
 	for(int i=0 ; i<myMaze.rows ; i++){
-		path[i] = new char[myMaze.cols];
+		mazeArray[i] = new char[myMaze.cols];
 		for(int j=0 ; j<myMaze.cols ; j++)
-		path[i][j] = '-';
+		mazeArray[i][j] = myMaze.matrix[i][j];
 	}
 
 
@@ -112,7 +115,7 @@ int main()
 	// printArray(path,2,2);
 
 
-	bruteForceMazeSolver(myMaze, 1, 1, path, !alwaysTrue, x, y);
+	bruteForceMazeSolver(mazeArray, 1, 1, !alwaysTrue, x, y, myMaze);
 
 
 
@@ -130,78 +133,36 @@ int main()
 	return 0;
 }
 
-int bruteForceMazeSolver(struct maze myMaze, int i, int j, char **pathArray, bool oneShot, int start, int end)
+int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, int startY, struct maze structMaze)
 {
 
-
 	// will not activate unless this is the first iteration
+	// gives starting location
 	if(!oneShot){
-		i = start;
-		j = end;
+		i = startX;
+		j = startY;
 		oneShot = true;
-		printArray(pathArray, myMaze.rows, myMaze.cols);
+		myMaze[i][j] = 't';
+		printArray(myMaze, structMaze.rows, structMaze.cols);
 	}
 
-	printArray(pathArray, myMaze.rows, myMaze.cols);
+	// cout << endl << endl;
+	// printArray(myMaze, structMaze.rows, structMaze.cols);
 
 	// Check if adjacent spot is F
-	if(myMaze.matrix[i][j]=='F'){
-		printArray(pathArray, myMaze.rows, myMaze.cols);
+	if(myMaze[i][j]=='F'){
+		printArray(myMaze, structMaze.rows, structMaze.cols);
 	}
 	else{
-		if(isEmpty(myMaze,i,j+1)){
-			// pathArray[i][j] = 't'; FIXME:RH:Change pathArray's to myMaze t, not pathArray
-			bruteForceMazeSolver(myMaze, i, j+1, pathArray, oneShot, start, end);
-		}
-		else{
-			if(isEmpty(myMaze,i+1,j)){
-				pathArray[i][j] = 't';
-				bruteForceMazeSolver(myMaze, i+1, j, pathArray, oneShot, start, end);
-			}
-			else{
-				if(isEmpty(myMaze,i-1,j)){
-					pathArray[i][j] = 't';
-					bruteForceMazeSolver(myMaze, i-1, j, pathArray, oneShot, start, end);
-				}
-				else{
-					if(isEmpty(myMaze,i,j-1)){
-						pathArray[i][j] = 't';
-						bruteForceMazeSolver(myMaze, i, j-1, pathArray, oneShot, start, end);
-					}
-					else{
-						if(hasBeenChecked(myMaze,i,j+1)){
-							pathArray[i][j] = 'x';
-							bruteForceMazeSolver(myMaze, i, j+1, pathArray, oneShot, start, end);
-						}
-						else{
-							if(hasBeenChecked(myMaze,i+1,j)){
-								pathArray[i][j] = 'x';
-								bruteForceMazeSolver(myMaze, i+1, j, pathArray, oneShot, start, end);
-							}
-							else{
-								if(hasBeenChecked(myMaze,i-1,j)){
-									pathArray[i][j] = 'x';
-									bruteForceMazeSolver(myMaze, i-1, j, pathArray, oneShot, start, end);
-								}
-								else{
-									if(hasBeenChecked(myMaze,i,j-1)){
-										pathArray[i][j] = 'x';
-										bruteForceMazeSolver(myMaze, i, j-1, pathArray, oneShot, start, end);
-									}
-								}
-							}
-						}
-					}
-				}
+		bool isEmptySpace = bruteCheckForEmpty(myMaze,i,j,structMaze);
+		if(isEmptySpace){
+			bool isTraveledSpace = bruteCheckForTraveled(myMaze,i,j, structMaze);
+			if(!isTraveledSpace){
+				cout << "ERROR";
 			}
 		}
 	}
 
-	// Check if east is empty
-
-
-
-	//add algorithm here
 	return -1;
 }
 int backtrackingMazeSolver(int i, int j)
@@ -236,31 +197,27 @@ int randomizedMazeSolver(int i, int j)
 // will check the character stored is a space character
 // (not in the Master Chief sorta way), then set the return
 // condition to true
-bool isEmpty(struct maze myMaze, int i, int j){
+bool isEmpty(char **myMaze, int i, int j, int height, int width){
 	bool isEmpty = false;
 	bool isValidLocation = true;
 
 	// check if valid
-	if(myMaze.rows < i){
+	if(height < i){
 		cout << "Not a valid row lacation";
 		isValidLocation = !isValidLocation;
 	}
-	if(myMaze.cols < j){
+	if(width < j){
 		cout << "Not a valid col lacation";
 		isValidLocation = !isValidLocation;
 	}
 
 	// check if space
 	if(isValidLocation){
-		if(myMaze.matrix[i][j] == ' ')
+		if(myMaze[i][j] == ' ')
 		{
 			isEmpty = true;
 		}
 	}
-
-	// FIXME: RH: add a tracking character to myMaze?
-
-
 
 	return isEmpty;
 
@@ -268,16 +225,16 @@ bool isEmpty(struct maze myMaze, int i, int j){
 
 // Added by RH
 // Same as isValid, but for check the char 't'
-bool hasBeenChecked(struct maze myMaze, int i, int j){
+bool hasBeenChecked(char **myMaze, int i, int j, int height, int width){
 	bool isTracked = false;
 	bool isValidLocation = true;
 
 	// check if valid
-	if(myMaze.rows < i){
+	if(height < i){
 		cout << "Not a valid row lacation";
 		isValidLocation = !isValidLocation;
 	}
-	if(myMaze.cols < j){
+	if(width < j){
 		cout << "Not a valid col lacation";
 		isValidLocation = !isValidLocation;
 	}
@@ -285,7 +242,7 @@ bool hasBeenChecked(struct maze myMaze, int i, int j){
 
 	// check if space
 	if(isValidLocation){
-		if(myMaze.matrix[i][j] == ' ')
+		if(myMaze[i][j] == ' ')
 		{
 			isTracked = true;
 		}
@@ -295,13 +252,72 @@ bool hasBeenChecked(struct maze myMaze, int i, int j){
 
 }
 
-void printArray(char **pathArray, int row, int col){
+void printArray(char **array, int row, int col){
 	for(int i=0 ; i<row ; i++){
 		for(int j=0 ; j<col ; j++){
-			cout << pathArray[i][j];
+			cout << array[i][j];
 		}
 		cout << endl;
 	}
+}
+
+bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze){
+	if(isEmpty(myMaze,i,j+1,structMaze.rows,structMaze.cols)){
+		myMaze[i][j] = 't';
+		bruteForceMazeSolver(myMaze, i, j+1, true, 0, 0, structMaze);
+	}
+	else{
+		if(isEmpty(myMaze,i+1,j,structMaze.rows,structMaze.cols)){
+			myMaze[i][j] = 't';
+			bruteForceMazeSolver(myMaze, i+1, j, true, 0, 0, structMaze);
+		}
+		else{
+			if(isEmpty(myMaze,i-1,j,structMaze.rows,structMaze.cols)){
+				myMaze[i][j] = 't';
+				bruteForceMazeSolver(myMaze, i-1, j, true, 0, 0, structMaze);
+			}
+			else{
+				if(isEmpty(myMaze,i,j-1,structMaze.rows,structMaze.cols)){
+					myMaze[i][j] = 't';
+					bruteForceMazeSolver(myMaze, i, j-1, true, 0, 0, structMaze);
+				}
+				else{
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze){
+
+	if(hasBeenChecked(myMaze,i,j+1,structMaze.rows,structMaze.cols)){
+		myMaze[i][j] = 'x';
+		bruteForceMazeSolver(myMaze, i, j+1,true, 0, 0, structMaze);
+	}
+	else{
+		if(hasBeenChecked(myMaze,i+1,j,structMaze.rows,structMaze.cols)){
+			myMaze[i][j] = 'x';
+			bruteForceMazeSolver(myMaze, i+1, j, true, 0, 0, structMaze);
+		}
+		else{
+			if(hasBeenChecked(myMaze,i-1,j,structMaze.rows,structMaze.cols)){
+				myMaze[i][j] = 'x';
+				bruteForceMazeSolver(myMaze, i-1, j, true, 0, 0, structMaze);
+			}
+			else{
+				if(hasBeenChecked(myMaze,i,j-1,structMaze.rows,structMaze.cols)){
+					myMaze[i][j] = 'x';
+					bruteForceMazeSolver(myMaze, i, j-1, true, 0, 0, structMaze);
+				}
+				else{
+					return false;
+				}
+			}
+		}
+	}
+	return true;
 }
 
 //recursion!!
