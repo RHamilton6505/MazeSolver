@@ -28,6 +28,7 @@ struct maze
 };
 
 maze myMaze;
+int bruteForceCount = 0;
 
 int main()
 {
@@ -70,7 +71,7 @@ int main()
 		y=j;
 	}
 
-	//Find Finish coordinates
+	Find Finish coordinates
 	for(int i=0; i<myMaze.rows; i++)
 	for(int j=0; j<myMaze.cols; j++)
 	if( myMaze.matrix[i][j] == 'F' ){
@@ -79,14 +80,14 @@ int main()
 	}
 
 	//Call a recursive mazeSolver
-	//FIXME:RH:int bfDistance = bruteForceMazeSolver(x,y);     //brute force? dnc?
+	FIXME:RH:int bfDistance = bruteForceMazeSolver(x,y);     //brute force? dnc?
 	int btDistance = backtrackingMazeSolver(x,y);     //brute force? dnc?
 	int gDistance = greedyMazeSolver(x,y,endX,endY);
 	int dncDistance = divideAndConquerMazeSolver(x,y);
 	int dpDistance = dynamicProgrammingMazeSolver(x,y);
 	int rDistance = randomizedMazeSolver(x,y);
 
-	//cout << "Brute force distance: " << bfDistance << " units away!" << endl;
+	cout << "Brute force distance: " << bfDistance << " units away!" << endl;
 	cout << "Backtracking distance: " << btDistance << " units away!" << endl;
 	cout << "Greedy distance: " << gDistance << " units away!" << endl;
 	cout << "Divide and conquer distance: " << dncDistance << " units away!" << endl;
@@ -125,6 +126,8 @@ int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, 
 {
 	bool isEmptySpace, isTraveledSpace;
 
+	bruteForceCount++;
+
 	// will not activate unless this is the first iteration
 	// gives starting location
 	if(!oneShot){
@@ -134,17 +137,17 @@ int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, 
 		myMaze[i][j] = 't';
 	}
 
-	// cout << endl << endl;
-	// printArray(myMaze, structMaze.rows, structMaze.cols);
-
 	// Check if adjacent spot is F
 	if(isFinishAdjacent(myMaze,i,j)){
 		myMaze[i][j] = 't';
 		printArray(myMaze, structMaze.rows, structMaze.cols);
+		cout << "Brute distance: " << bruteForceCount << endl;
 	}
 	else{
+		// if a finish spot is not nearby, check for empty space
 		isEmptySpace = bruteCheckForEmpty(myMaze,i,j,structMaze);
 		if(!isEmptySpace){
+			// if there are no empty spaces, check for already traveled spaces
 			isTraveledSpace = bruteCheckForTraveled(myMaze,i,j, structMaze);
 			if(!isTraveledSpace){
 				cout << "ERROR";
@@ -282,6 +285,9 @@ void printArray(char **array, int row, int col){
 	}
 }
 
+
+// Checks for empty spots in direction order east, north, south, west
+// Marks a 't' on every traveled spot
 bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze){
 	if(isEmpty(myMaze,i,j+1,structMaze.rows,structMaze.cols)){
 		myMaze[i][j] = 't';
@@ -311,8 +317,11 @@ bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze){
 	return true;
 }
 
-bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze){
 
+// Runs the same thing as bruteCheckForEmpty, except places 'x' and
+// does not run if the finish is adjacent. Without the check, the program
+// defaults to looking for 't' spaces rather than stopping
+bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze){
 	if(!isFinishAdjacent(myMaze,i,j)){
 		if(hasBeenChecked(myMaze,i,j+1,structMaze.rows,structMaze.cols)){
 			myMaze[i][j] = 'x';
@@ -343,6 +352,7 @@ bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze){
 	return true;
 }
 
+// checks all directions for adjacent 'F'
 bool isFinishAdjacent(char **myMaze, int i, int j){
 
 	if(myMaze[i+1][j]=='F'){
