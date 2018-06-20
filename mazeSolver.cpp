@@ -3,13 +3,25 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <stack>
 
 using namespace std;
 
+// struct node
+// {
+// 	int x;
+// 	int y;
+// 	int gN;
+// 	int hN;
+// 	int fN;
+// };
 
 int backtrackingMazeSolver(int i, int j);
-int greedyMazeSolver(int i, int j, int endX, int endY);
-std::vector<int> GetClosestNodeToFinish(int i, int j, int endX, int endY);
+// int greedyMazeSolver(int i, int j, int endX, int endY);
+// void InitializeNodes(struct maze structMaze, int startX, int startY, int endX, int endY);
+// node GetNextNode(int x, int y);
+// void SortNodes(std::vector<node>& nodes);
 int divideAndConquerMazeSolver(int i, int j);
 int dynamicProgrammingMazeSolver(int i, int j);
 int randomizedMazeSolver(int i, int j);
@@ -20,6 +32,11 @@ void printArray(char **array, int row, int col);
 bool bruteCheckForEmpty(char **myMaze, int i, int j, struct maze structMaze);
 bool bruteCheckForTraveled(char **myMaze, int i, int j, struct maze structMaze);
 bool isFinishAdjacent(char **myMaze, int i, int j);
+
+// int backtrackingMazeSolver(char **myMaze, int i, int j, struct maze structMaze);
+// std::vector<std::vector<int>> FindAvailableMoves(char **myMaze, int i, int j, struct maze structMaze);
+int backtrackingMazeSolver(int i, int j, struct maze structMaze);
+std::vector<std::vector<int>> FindAvailableMoves(int i, int j, struct maze structMaze);
 
 struct maze
 {
@@ -35,6 +52,7 @@ int main()
 	//required variables
 	ifstream in;
 	in.open("maze.txt");
+	// in.open("JPRmaze2.txt");
 	char line;
 
 	//read the matrix using plain c code, character by character
@@ -62,7 +80,6 @@ int main()
 		cout << endl;
 	}
 	int x=1,y=1;
-	int endX=1,endY=1;
 
 	//Find starting coordinates
 	for(int i=0; i<myMaze.rows; i++)
@@ -72,28 +89,21 @@ int main()
 		y=j;
 	}
 
-	//Find Finish coordinates
-	for(int i=0; i<myMaze.rows; i++)
-	for(int j=0; j<myMaze.cols; j++)
-	if( myMaze.matrix[i][j] == 'F' ){
-		endX=j;
-		endY=i;
-	}
-
 	//Call a recursive mazeSolver
 	//FIXME:RH:int bfDistance = bruteForceMazeSolver(x,y);     //brute force? dnc?
-	int btDistance = backtrackingMazeSolver(x,y);     //brute force? dnc?
+	// int btDistance = backtrackingMazeSolver(x,y);     //brute force? dnc?
+	// InitializeNodes(myMaze, x, y, endX, endY);
 	// int gDistance = greedyMazeSolver(x,y,endX,endY);
 	int dncDistance = divideAndConquerMazeSolver(x,y);
 	int dpDistance = dynamicProgrammingMazeSolver(x,y);
 	int rDistance = randomizedMazeSolver(x,y);
 
 	//cout << "Brute force distance: " << bfDistance << " units away!" << endl;
-	cout << "Backtracking distance: " << btDistance << " units away!" << endl;
+	// cout << "Backtracking distance: " << btDistance << " units away!" << endl;
 	// cout << "Greedy distance: " << gDistance << " units away!" << endl;
-	cout << "Divide and conquer distance: " << dncDistance << " units away!" << endl;
-	cout << "Dynamic programming distance: " << dpDistance << " units away!" << endl;
-	cout << "Randomized distance: " << rDistance << " units away!" << endl;
+	// cout << "Divide and conquer distance: " << dncDistance << " units away!" << endl;
+	// cout << "Dynamic programming distance: " << dpDistance << " units away!" << endl;
+	// cout << "Randomized distance: " << rDistance << " units away!" << endl;
 
 	//Print solved maze - x2
 	// for(int i=0; i<myMaze.rows; i++)
@@ -118,7 +128,9 @@ int main()
 		mazeArray[i][j] = myMaze.matrix[i][j];
 	}
 
-	bruteForceMazeSolver(mazeArray, 1, 1, !alwaysTrue, x, y, myMaze);
+	// bruteForceMazeSolver(mazeArray, 1, 1, !alwaysTrue, x, y, myMaze);
+
+	backtrackingMazeSolver(x, y, myMaze);
 
 	return 0;
 }
@@ -156,49 +168,91 @@ int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, 
 
 	return -1;
 }
-int backtrackingMazeSolver(int i, int j)
+
+int backtrackingMazeSolver(int i, int j, struct maze structMaze)
 {
-	//algorithm goes here
-	return -1;
-}
-int greedyMazeSolver(int i, int j, int endX, int endY)
-{
-	if(myMaze.matrix[i][j] == 'F') return 1;
+	std::stack<std::vector<int>> moves;
 
-	std::vector<int> nextNode = GetClosestNodeToFinish(i, j, endX, endY);
-	myMaze.matrix[nextNode[0]][nextNode[1]] = 'X';
-	return greedyMazeSolver(nextNode[0], nextNode[1], endX, endY);
-
-  // return -1;
-}
-
-std::vector<int> GetClosestNodeToFinish(int i, int j, int endX, int endY)
-{
-	std::vector<int> north = {i, j-1};
-	std::vector<int> east = {i+1, j};
-	std::vector<int> south = {i, j+1};
-	std::vector<int> west = {i-1, j};
-
-	std::vector<std::vector<int>> directions;
-	directions.push_back(north);
-	directions.push_back(east);
-	directions.push_back(south);
-	directions.push_back(west);
-
-	std::vector<int> clostestNode = south;
-	for(int i = 0; i < 4; i++)
+	while(myMaze.matrix[i][j] != 'F')
 	{
-		int nodeDistance = std::abs(clostestNode[0] - endX) + std::abs(clostestNode[1] - endY);
-		if(nodeDistance > (std::abs(directions[i][0] - endX) + std::abs(directions[i][1] - endY)))
+		std::vector<std::vector<int>> availableMoves = FindAvailableMoves(i, j, structMaze);
+
+		if(availableMoves.size() > 1)
 		{
-			if(myMaze.matrix[directions[i][0]][directions[i][1]] != '*')
+			if(!(myMaze.matrix[i][j] == 'S')) myMaze.matrix[i][j] = 'X';
+			moves.push({i, j});
+			i = availableMoves[1][0];
+			j = availableMoves[1][1];
+		}
+		else if(availableMoves.size() == 1)
+		{
+			if(!(myMaze.matrix[i][j] == 'S')) myMaze.matrix[i][j] = 'x';
+			moves.push({i,j});
+			i = availableMoves[0][0];
+			j = availableMoves[0][1];
+		}
+		else
+		{
+			while(myMaze.matrix[i][j] != 'X')
 			{
-				clostestNode = directions[i];
+				moves.pop();
+				std::vector<int> prevMove = moves.top();
+				i = prevMove[0];
+				j = prevMove[1];
 			}
 		}
 	}
-	return clostestNode;
+	for(int i=0; i<myMaze.rows; i++)
+	{
+		for(int j=0; j<myMaze.cols; j++)
+		cout << myMaze.matrix[i][j];
+		cout << endl;
+	}
+
+	return 1;
 }
+
+std::vector<std::vector<int>> FindAvailableMoves(int i, int j, struct maze structMaze)
+{
+	std::vector<std::vector<int>> availableMoves;
+	for(int x = 0; x < 4; x++)
+	{
+		switch(x)
+		{
+			case 0:
+				if(myMaze.matrix[i-1][j] == ' ' || myMaze.matrix[i-1][j] == 'F') //north
+				{
+					availableMoves.push_back({i-1, j});
+				}
+				break;
+			case 1:
+				if(myMaze.matrix[i][j+1] == ' ' || myMaze.matrix[i][j+1] == 'F')  //east
+				{
+					availableMoves.push_back({i, j+1});
+				}
+				break;
+			case 2:
+				if(myMaze.matrix[i+1][j] == ' ' || myMaze.matrix[i+1][j] == 'F')  //south
+				{
+					availableMoves.push_back({i+1, j});
+				}
+				break;
+			case 3:
+				if(myMaze.matrix[i][j-1] == ' ' || myMaze.matrix[i][j-1] == 'F')  //west
+				{
+					availableMoves.push_back({i, j-1});
+				}
+				break;
+		}
+	}
+	return availableMoves;
+}
+
+int greedyMazeSolver(int i, int j, int endX, int endY)
+{
+  return -1;
+}
+
 int divideAndConquerMazeSolver(int i, int j)
 {
 	//algorithm goes here
