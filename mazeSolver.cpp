@@ -17,7 +17,7 @@ using namespace std;
 // 	int fN;
 // };
 
-int backtrackingMazeSolver(int i, int j);
+// int backtrackingMazeSolver(int i, int j);
 // int greedyMazeSolver(int i, int j, int endX, int endY);
 // void InitializeNodes(struct maze structMaze, int startX, int startY, int endX, int endY);
 // node GetNextNode(int x, int y);
@@ -35,8 +35,8 @@ bool isFinishAdjacent(char **myMaze, int i, int j);
 
 // int backtrackingMazeSolver(char **myMaze, int i, int j, struct maze structMaze);
 // std::vector<std::vector<int>> FindAvailableMoves(char **myMaze, int i, int j, struct maze structMaze);
-int backtrackingMazeSolver(int i, int j, struct maze structMaze);
-std::vector<std::vector<int>> FindAvailableMoves(int i, int j, struct maze structMaze);
+int backtrackingMazeSolver(int i, int j);
+std::vector<std::vector<int>> FindAvailableMoves(int i, int j);
 
 struct maze
 {
@@ -128,9 +128,9 @@ int main()
 		mazeArray[i][j] = myMaze.matrix[i][j];
 	}
 
-	// bruteForceMazeSolver(mazeArray, 1, 1, !alwaysTrue, x, y, myMaze);
+	bruteForceMazeSolver(mazeArray, 1, 1, !alwaysTrue, x, y, myMaze);
 
-	backtrackingMazeSolver(x, y, myMaze);
+	backtrackingMazeSolver(x, y);
 
 	return 0;
 }
@@ -169,13 +169,13 @@ int bruteForceMazeSolver(char **myMaze, int i, int j, bool oneShot, int startX, 
 	return -1;
 }
 
-int backtrackingMazeSolver(int i, int j, struct maze structMaze)
+int backtrackingMazeSolver(int i, int j)
 {
 	std::stack<std::vector<int>> moves;
 
 	while(myMaze.matrix[i][j] != 'F')
 	{
-		std::vector<std::vector<int>> availableMoves = FindAvailableMoves(i, j, structMaze);
+		std::vector<std::vector<int>> availableMoves = FindAvailableMoves(i, j);
 
 		if(availableMoves.size() > 1)
 		{
@@ -212,7 +212,7 @@ int backtrackingMazeSolver(int i, int j, struct maze structMaze)
 	return 1;
 }
 
-std::vector<std::vector<int>> FindAvailableMoves(int i, int j, struct maze structMaze)
+std::vector<std::vector<int>> FindAvailableMoves(int i, int j)
 {
 	std::vector<std::vector<int>> availableMoves;
 	for(int x = 0; x < 4; x++)
